@@ -5,7 +5,9 @@
 -- input:  gamepad
 -- saveid: msx80.oseo
 
--- Big thanks to Fubuki for graphics!
+-- Big thanks to:
+--   Fubuki for graphics!
+--   jahodfra for extending the game about second player
 
 DAMP=1.06  -- acceleration damping
 players=1
