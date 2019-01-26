@@ -7,10 +7,6 @@
 
 -- Big thanks to Fubuki for graphics!
 
--- note: i was convinced it was "baloon"
--- while i figured out it's "balloon"
--- too lazy to correct all the source.
-
 DAMP=1.06  -- acceleration damping
 t=0        -- time
 lives=3    -- lives left
@@ -28,8 +24,8 @@ if pmem(0)==0 then
   pmem(0, 50)
 end
 
--- randomly initialize a baloon
-function initBaloon()
+-- randomly initialize a balloon
+function initBalloon()
   return {
     -- start anywhere on the bottom line
     x = 5+math.random(214),
@@ -39,30 +35,30 @@ function initBaloon()
     -- width of the horizontal oscillation
     width = 3+math.random(10),
     -- random starting angle to avoid
-    -- having all baloons sincronized
+    -- having all balloons sincronized
     angle = math.random(628)/100,
-    -- raising speed of baloon
+    -- raising speed of balloon
     speed = hit/1000+ 0.1+math.random()/2,
     -- choose one of the colors
     color = math.random(5)
   }
 end
 
--- initialize array of 4 baloons
-baloons = {
-  initBaloon(),
-  initBaloon(),
-  initBaloon(),
-  initBaloon()
+-- initialize array of 4 balloons
+balloons = {
+  initBalloon(),
+  initBalloon(),
+  initBalloon(),
+  initBalloon()
 }
 
 -- calculate x displacement of
--- baloon b at time t
+-- balloon b at time t
 function dx(b, t)
   return math.cos(t/30+b.angle)*b.width
 end
 
--- check if bird collides with baloon b
+-- check if bird collides with balloon b
 function collide(b)
   -- calculate beak position
   local beakX = x+(flip==0 and 15 or 0)
@@ -71,9 +67,9 @@ function collide(b)
   return beakX > b.x and beakX < b.x+16 and beakY > b.y and beakY < b.y+16
 end
 
-function handleBaloons()
-  for i=1, #baloons do
-    local b=baloons[i]
+function handleBalloons()
+  for i=1, #balloons do
+    local b=balloons[i]
     -- recalculate old displacement
     -- to be subtracted and new one to be
     -- added. Not the most performant
@@ -88,8 +84,8 @@ function handleBaloons()
     -- actually playing
     if mode == 1 then
       if b.y<-16 then
-        -- reset baloons it it went high
-        baloons[i]=initBaloon()
+        -- reset balloons it it went high
+        balloons[i]=initBalloon()
         lives=lives-1
         if lives==0 then
           mode=2
@@ -105,7 +101,7 @@ function handleBaloons()
         -- test collision
         sfx(0, 30, 6)
         hit = hit+1
-        baloons[i]=initBaloon()
+        balloons[i]=initBalloon()
       end
     end
   end
@@ -173,7 +169,7 @@ function gameTIC()
   end
 
   drawBackground()
-  handleBaloons()
+  handleBalloons()
 
   spr(33+(math.floor((t/12)%4)*2), x, y, 14, 1, flip, 0, 2, 2)
   for i=1, lives do
@@ -197,7 +193,7 @@ function introTIC()
   x=-100
   y=0
   drawBackground()
-  handleBaloons()
+  handleBalloons()
 
   printb("OSEO", 149, 19, 6, 2)
   printb("Balloon popping fun!", 119, 34, 15)
@@ -214,11 +210,11 @@ function introTIC()
     lives=3
     ax=0
     ay=0
-    baloons = {
-      initBaloon(),
-      initBaloon(),
-      initBaloon(),
-      initBaloon()
+    balloons = {
+      initBalloon(),
+      initBalloon(),
+      initBalloon(),
+      initBalloon()
     }
     sfx(3, 70, 20)
     mode=1
@@ -231,7 +227,7 @@ function gameOverTIC()
   y=0
 
   drawBackground()
-  handleBaloons()
+  handleBalloons()
 
   print("GAME OVER", 70, 50, 0, false, 2)
   print("GAME OVER", 69, 49, 6, false, 2)
