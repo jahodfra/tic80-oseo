@@ -165,7 +165,6 @@ function handleBalloons(compute_collisions)
         sfx(0, 30, 6)
         hit = hit+1
         balloons[i]=initBalloon()
-
       end
     end
   end
@@ -222,71 +221,85 @@ function drawBackground()
   spr(96, 150, 80, 0, 1, 0, 0, 8, 8)
 end
 
-DIFFICULTY_SETTINGS={
-  {name='easy', speed=0.5},
-  {name='normal', speed=1.0},
-  {name='hard', speed=1.3},
-}
-difficulty=1
+DIFFICULTY_SETTINGS={0.5, 1.0, 1.3}
 choice=2
 
 Widget={}
-function Widget.new(x, y, get_text, press)
-  local obj={
-    x=x,       -- position
-    y=y,
-    get_text=get_text,
-    press=press
-  }
-  setmetatable(obj, {__index=Widget})
+function Widget:press() end
+function Widget:left() end
+function Widget:right() end
+function Widget:get_text() return "Default" end
+function Widget:new(obj)
+  setmetatable(obj, self)
+  self.__index = self
   return obj
 end
 
 function Widget:draw(selected)
-  text=self.get_text()
-  color=selected and 6 or 15
-  printb(text, self.x, self.y, color)
+  local color=selected and 6 or 15
+  printb(self:get_text(), self.x, self.y, color)
+end
+
+SelectBox=Widget:new{option=1}
+
+function SelectBox:get_text()
+  return self.options[self.option]
+end
+
+function SelectBox:left()
+  self.option=self.option - 1
+  if self.option <= 0 then
+    self.option = #self.options
+  end
+end
+
+function SelectBox:right()
+  self.option=self.option + 1
+  if #self.options < self.option then
+    self.option = 1
+  end
+end
+
+SelectBox.press=SelectBox.right
+
+PLAYER_SELECT=SelectBox:new{x=29, y=69, options={'1 player', '2 players'}}
+
+DIFFICULTY_SELECT=SelectBox:new{x=29, y=79, option=2, options={
+    'Difficulty: easy',
+    'Difficulty: normal',
+    'Difficulty: hard'}}
+
+START_BUTTON=Widget:new{x=29, y=99}
+
+function START_BUTTON:get_text()
+  return "START"
+end
+
+function START_BUTTON:press()
+  players=PLAYER_SELECT.option
+  player1 = Player.new(80, 50)
+  if players > 1 then
+    player2 = Player.new(120, 50)
+  else
+    player2 = Player.new(-120, 50)
+  end
+  hit=0
+  lives=3
+  speed=DIFFICULTY_SETTINGS[DIFFICULTY_SELECT.option]
+  balloons = {
+    initBalloon(),
+    initBalloon(),
+    initBalloon(),
+    initBalloon()
+  }
+  sfx(3, 70, 20)
+  mode=1
 end
 
 WIDGETS={
-  Widget.new(29, 69, function()
-      if players > 1 then
-        return '2 players'
-      else
-        return '1 player'
-      end
-    end,
-    function()
-      players=players%2+1
-  end),
-  Widget.new(29, 79, function()
-      return "Difficulty: "..DIFFICULTY_SETTINGS[difficulty+1].name
-    end,
-    function()
-      difficulty=(difficulty+1)%3
-  end),
-  Widget.new(29, 99, function()
-      return "START"
-    end,
-    function()
-      player1 = Player.new(80, 50)
-      if players > 1 then
-        player2 = Player.new(120, 50)
-      else
-        player2 = Player.new(-120, 50)
-      end
-      hit=0
-      lives=3
-      speed=DIFFICULTY_SETTINGS[difficulty+1].speed
-      balloons = {
-        initBalloon(),
-        initBalloon(),
-        initBalloon(),
-        initBalloon()
-      }
-      sfx(3, 70, 20)
-      mode=1
-  end),
+  PLAYER_SELECT,
+  DIFFICULTY_SELECT,
+  START_BUTTON
 }
 
 function introTIC()
@@ -305,10 +318,16 @@ function introTIC()
   t=t+1
 
   if btnp(0) then
-    choice=(choice-1)%3
+    choice=(choice-1)%#WIDGETS
   end
   if btnp(1) then
-    choice=(choice+1)%3
+    choice=(choice+1)%#WIDGETS
+  end
+  if btnp(2) then
+    WIDGETS[choice+1]:left()
+  end
+  if btnp(3) then
+    WIDGETS[choice+1]:right()
   end
   if btnp(4) then
     WIDGETS[choice+1]:press()
